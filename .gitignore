@@ -2,4 +2,6 @@
 *.sh
 log_test/
 result_1024
+env-dpr
+result/
 
