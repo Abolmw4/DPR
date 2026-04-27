@@ -29,7 +29,7 @@ class MyTestCase(unittest.TestCase):
 
     def test_create_different_lighting_condition(self, dir_name: None):
         global __OUTPUT_PATH
-        config_file = "/home/abolfazl/Documents/DPR/data/example_light"
+        config_file = "/home/abolfazl/Documents/DPR/data/example_light_1"
         for file in os.listdir(config_file):
             with open(os.path.join(config_file, file), mode='r') as txtFile:
                 normal_str = list(map(lambda inpt: format(float(inpt), '.20f') , txtFile.readlines()))
@@ -39,7 +39,7 @@ class MyTestCase(unittest.TestCase):
 
                 # ✅ تغییر از عدد چهارم به بعد (index 3 به بعد)
                 for i in range(4, len(normal_str)):
-                    normal_str[i] = str(random.uniform(-10, 10))
+                    normal_str[i] = str(random.uniform(0, 1))
 
                 if not os.path.exists(os.path.join(MyTestCase.OUTPUT_PATH, dir_name, "example_light")):
                     os.makedirs(os.path.join(MyTestCase.OUTPUT_PATH, dir_name, "example_light"))
