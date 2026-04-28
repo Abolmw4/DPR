@@ -65,8 +65,10 @@ def test_network_demo_512(**kwargs) -> None:
     inputL = inputL[None,None,...]
     inputL = Variable(torch.from_numpy(inputL).cuda())
 
-    for i in range(7):
-        sh = np.loadtxt(os.path.join(lightFolder, 'rotate_light_{:02d}.txt'.format(i)))
+    for file in os.listdir(lightFolder):
+        if os.path.isdir(os.path.join(lightFolder, file)):
+            continue
+        sh = np.loadtxt(os.path.join(lightFolder, file))
         sh = sh[0:9]
         sh = sh * 0.7
 
@@ -81,8 +83,11 @@ def test_network_demo_512(**kwargs) -> None:
         shading = (shading *255.0).astype(np.uint8)
         shading = np.reshape(shading, (256, 256))
         shading = shading * valid
-        cv2.imwrite(os.path.join(saveFolder, \
-                'light_{:02d}.png'.format(i)), shading)
+        # cv2.imwrite(os.path.join(saveFolder, \
+        #         'light_{:02d}.png'.format(i)), shading)
+
+        cv2.imwrite(os.path.join(saveFolder, file.replace(".txt", '.jpg')), shading)
+
         #--------------------------------------------------
 
         #----------------------------------------------
@@ -97,7 +102,6 @@ def test_network_demo_512(**kwargs) -> None:
         Lab[:,:,0] = outputImg
         resultLab = cv2.cvtColor(Lab, cv2.COLOR_LAB2BGR)
         resultLab = cv2.resize(resultLab, (col, row))
-        cv2.imwrite(os.path.join(saveFolder, \
-             'obama_{:02d}.jpg'.format(i)), resultLab)
-        #----------------------------------------------
 
+        cv2.imwrite(os.path.join(saveFolder, file.replace(".txt", '.jpg')), resultLab)
+        #----------------------------------------------
