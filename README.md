@@ -19,6 +19,44 @@ Hao Zhou, Sunil Hadap, Kalyan Sunkavalli, David W. Jacobs. In ICCV, 2019
 <img src="result/light_06.png" width="120px" >
 </p>
 
+---
+# Table of Contents
+
+- [Deep Single-Image Portrait Relighting](#deep-single-image-portrait-relighting)
+  - [Overview](#overview)
+  - [Notes](#notes)
+  - [Project Structure](#project-structure)
+  - [Requirements](#requirements)
+    - [Setup Instructions](#setup-instructions)
+  - [Brightness Configuration File](#brightness-configuration-file)
+  - [Running the Project](#running-the-project)
+  - [Data Preparation](#data-preparation)
+  - [Citation](#citation)
+---
+# Overview
+This project is an implementation of the paper "Deep Single-Image Portrait Relighting" presented at ICCV 2019. Its core goal is to perform relighting on single portrait images using deep learning: given an input portrait and a target lighting configuration, the model can re-render the same face under completely new illumination conditions. The method is fundamentally based on intrinsic image decomposition, where the network learns to separate an input image into its physically meaningful components—albedo (surface reflectance), geometry (represented by a depth map or surface normal vectors), and scene lighting. By disentangling these factors and then replacing the estimated lighting component with a desired target profile, the system renders the final output through a data-driven pipeline rooted in classic image formation models, enabling precise and controllable illumination effects.
+
+From a technical standpoint, the architecture relies on a U-Net with an Hourglass structure that preserves spatial resolution while extracting features. A key design choice is the use of second-order Spherical Harmonics (SH) for lighting representation, employing 9 coefficients: one for ambient light, three for directional lighting along the coordinate axes, and five for higher-frequency details such as soft shadows on curved facial surfaces. This compact yet physically grounded representation makes illumination manipulation both efficient and interpretable. The codebase supports processing images at 512×512 and 1024×1024 resolutions and depends on the shtools library for SH-related functions. It also provides utilities to convert between different SH coordinate conventions (e.g., bip2017, sfsNet) and the one adopted here. Training data is organized into separate train, validation, and test file lists, while the rendering-based data generation pipeline resides in a separate repository.
+
+### Notes
+
+- We provide one example input image and seven example lighting configurations in the `data` directory.
+
+- Different methods may adopt different coordinate systems for Spherical Harmonics (SH).  
+  If you use SH lighting from external sources, you may need to convert the coordinate system accordingly.
+
+- The coordinate system used in this project follows the convention of **shtools**.
+
+- We provide a utility script `utils_normal.py` (located in the `utils` directory) to help convert SH coefficients from:
+  - [bip2017](https://gravis.dmi.unibas.ch/PMM/data/bip/)
+  - [sfsNet](https://senguptaumd.github.io/SfSNet/)  
+  into the coordinate system used in this project.
+
+- To use `utils_normal.py`, you must install **shtools**.
+
+- This code is provided for **research purposes only**.
+
+---
 # Project Structure
 ```text
 .
@@ -47,7 +85,7 @@ Hao Zhou, Sunil Hadap, Kalyan Sunkavalli, David W. Jacobs. In ICCV, 2019
 │   │   ├── rotate_light_04.txt
 │   │   ├── rotate_light_05.txt
 │   │   └── rotate_light_06.txt
-│   ├── example_light_1
+│   ├── example_light_original
 │   │   ├── rotate_light_00.txt
 │   │   ├── rotate_light_01.txt
 │   │   ├── rotate_light_02.txt
@@ -93,22 +131,38 @@ Hao Zhou, Sunil Hadap, Kalyan Sunkavalli, David W. Jacobs. In ICCV, 2019
     └── utils_shtools.py
 ```
 
+# Requirements
 
-### Overview
- - Test script for 512x512 images: `testNetwork_demo_512.py`
- - Test script for 1024x1024 images: `testNetwork_demo_1024.py`
+To run this project, please make sure the following prerequisites are met:
 
-### Dependencies ###
-<p> pytorch >= 1.0.0 </p>
-<p> opencv >= 4.0.0 </p>
-<P> shtools: https://shtools.oca.eu/shtools/ (optional)</p>
+- **Python 3.10**
+- All required packages listed in `requirement.txt`
 
-# Notes
-We include an example image and seven example lightings in data. Note that different methods may have different coordinate system for Spherical Harmonics (SH), you may need to change the coordiante system if you use SH lighting from other sources. The coordinate system of our method is in accordance with shtools, we provide a function utils_normal.py in utils to help you tansfer the coordinate system from [bip2017](https://gravis.dmi.unibas.ch/PMM/data/bip/) and [sfsNet](https://senguptaumd.github.io/SfSNet/) to our coordinate system. To use utils_normal.py you need to install shtools. The code is for research purpose only.
+We strongly recommend using a virtual environment to avoid dependency conflicts.
 
+## Setup Instructions
+
+1. Create and activate a virtual environment:
+```bash
+python3.10 -m venv dpr-env
+source dpr-env/bin/activate      # On Linux / macOS
+# dpr-env\Scripts\activate       # On Windows
+```
+2. install python packages
+```bash
+pip install --upgrade pip
+pip install -r requirement.txt 
+```
 --- 
 
 # Brightness Configuration File
+
+- The directory `data/example_light_original` contains multiple lighting configuration files.  
+  Each configuration defines a specific lighting condition, including variations in illumination angle and light intensity.
+
+- These configuration files are used to simulate how the portrait appears under different lighting directions and strengths.
+
+- Detailed explanations of the configuration file parameters are provided in the following section.
 
 This configuration file contains settings that include 9 coefficients related to lighting.
 
@@ -137,6 +191,24 @@ This configuration file contains settings that include 9 coefficients related to
   - **Coefficient dependent on x² − y²**: Describes lighting differences caused by the relative contribution of the X and Y axes.
 
 These coefficients work together to create a realistic lighting effect in the rendered image.
+
+---
+# Running the Project
+
+- In the project repository, a set of **unit tests** has been provided that can be used to generate example outputs.
+
+- These tests are located in the corresponding test directory of the project.
+
+- The main methods for producing output are:
+  - `test_network_512_demo`
+  - `test_network_1024_demo`
+
+- These two methods demonstrate how to run the model and obtain relit portrait results.
+
+- The other test methods in the directory provide additional functionality and examples.  
+  You can understand their usage by reading the code.
+
+- For generating initial outputs and testing the pipeline, running the two demo methods above is sufficient.
 
 ---
 
