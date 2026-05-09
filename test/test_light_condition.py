@@ -14,8 +14,8 @@ class MyTestCase(unittest.TestCase):
     def test_network_512_demo(self):
         try:
             test_network_demo_512(model_folder="trained_model/",
-                                  lightFolder="candidiate_config/candidate3",
-                                  saveFolder="candidiate_config/candidate3/result",
+                                  lightFolder="candidiate_config/candidate1",
+                                  saveFolder="candidiate_config/candidate1/result",
                                   img="obama.jpg")
         except Exception as error:
             self.fail(f"test_network_demo_512 raised an exception: {error}")
