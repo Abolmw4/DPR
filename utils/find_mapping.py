@@ -19,6 +19,29 @@ def create_lighting_filter(img_x: np.ndarray, img_y: np.ndarray, epsilon: float=
                                             radius=radius,
                                             eps=eps)
     return smooth_gain, lab_x
+    # return gain_map, lab_x
+
+def apply_darkening_from_gain(smooth_gain: np.ndarray,
+                              shadow_strength: float = 0.4,
+                              curve_power: float = 1.5):
+    """
+    Darkens the lighting filter itself, without using the image (L-channel).
+    Only modifies `smooth_gain` directly.
+    """
+
+    # Normalize gain to [0, 1]
+    g = smooth_gain.astype(np.float32)
+    g_norm = g / g.max()
+
+    # Create a darkening curve entirely from the gain itself
+    # High gain → brighter areas → get reduced less
+    # Low gain → naturally darker → get reduced more
+    darkening_curve = (1.0 - shadow_strength * (1.0 - g_norm) ** curve_power)
+
+    # Final filter
+    final_gain = g * darkening_curve
+
+    return final_gain
 
 def apply_shadow_enhancement(lab_x: np.ndarray, smooth_gain: np.ndarray, shadow_strength: float = 0.4):
     
@@ -47,7 +70,7 @@ def apply_lighting_filter(target_img: np.ndarray, gain_filter: np.ndarray):
 
     lab[:, :, 0] = lab[:, :, 0] * gain_filter
     
-    lab[:, :, 0] = np.clip(lab[:, :, 0], 0, 100)
+    lab[:, :, 0] = np.clip(lab[:, :, 0], 0, 255)
 
     result = cv2.cvtColor(lab.astype(np.uint8), cv2.COLOR_LAB2BGR)
     return result

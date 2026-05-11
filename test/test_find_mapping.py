@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-from utils.find_mapping import create_lighting_filter, apply_lighting_filter, apply_shadow_enhancement
+from utils.find_mapping import create_lighting_filter, apply_lighting_filter, apply_shadow_enhancement, apply_darkening_from_gain
 import unittest
 
 
@@ -65,6 +65,21 @@ class MyTestCase(unittest.TestCase):
 
         cv2.imwrite(f"/home/abolfazl/Documents/DPR/res_darker_{shadow_strength}.jpg", result)
         cv2.imshow("result_img", result)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+
+
+    def test_darkening_from_gain(self):
+        refrence_image: np.ndarray = cv2.imread("/home/abolfazl/Documents/DPR/obama.jpg")
+        target_image: np.ndarray = cv2.imread("candidiate_config/candidate1/result/rotate_light_06.jpg")
+        smooth_gain, lab_x = create_lighting_filter(img_x=refrence_image, img_y=target_image)
+        cv2.imshow("filter", smooth_gain)
+        cv2.waitKey(0)
+
+        final_gain = apply_darkening_from_gain(smooth_gain=smooth_gain, shadow_strength=1.5, curve_power=1.5)
+        result = apply_lighting_filter(target_img=refrence_image, gain_filter=final_gain)
+        cv2.imshow("dark filter", final_gain)
+        cv2.imshow("result", result)
         cv2.waitKey(0)
         cv2.destroyAllWindows()
 
